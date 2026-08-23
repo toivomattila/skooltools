@@ -250,8 +250,8 @@ function ToolsPage({ onNavigate }: PageProps) {
             tools
           </p>
           <p className="meta-note">
-            <span className="legend-dot" aria-hidden="true" /> Examples and
-            placeholders while the directory takes shape
+            <span className="legend-dot" aria-hidden="true" /> Independent
+            listings, not endorsements
           </p>
         </div>
 
@@ -288,9 +288,14 @@ function ToolCard({ tool }: { tool: Tool }) {
       <p>{tool.description}</p>
       <div className="card-footer">
         <span>{tool.note}</span>
-        <span className="card-arrow" aria-hidden="true">
-          ↗
-        </span>
+        <a
+          className="tool-link"
+          href={tool.url}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Visit <span aria-hidden="true">↗</span>
+        </a>
       </div>
     </article>
   );
@@ -311,7 +316,9 @@ function ToolRow({ tool }: { tool: Tool }) {
       </div>
       <div className="tool-row-aside">
         <span>{tool.category}</span>
-        <small>{tool.note}</small>
+        <a href={tool.url} target="_blank" rel="noreferrer">
+          Visit tool <span aria-hidden="true">↗</span>
+        </a>
       </div>
     </article>
   );
@@ -320,7 +327,7 @@ function ToolRow({ tool }: { tool: Tool }) {
 function StatusPill({ status }: { status: ToolStatus }) {
   return (
     <span className={`status-pill status-pill-${status}`}>
-      {status === "example" ? "Example" : "Placeholder"}
+      {status === "listed" ? "Listed" : "Placeholder"}
     </span>
   );
 }

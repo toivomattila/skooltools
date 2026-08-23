@@ -55,14 +55,15 @@ new object to the `tools` array and keep it within the `Tool` shape:
 {
   slug: 'member-wins-log',
   name: 'Member wins log',
+  url: 'https://example.com/member-wins-log',
   description: 'Keep a simple record of the progress members share.',
-  category: 'Member experience',
+  category: 'Creator utilities',
   status: 'placeholder',
   note: 'Coming later',
 }
 ```
 
-Use `status: 'example'` for an idea with enough detail to demonstrate, and
+Use `status: 'listed'` for a researched directory entry, and
 `status: 'placeholder'` for a planned entry. Set `featured: true` to show an
 entry on the home page. The available categories are defined in the same file.
 

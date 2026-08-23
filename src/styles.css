@@ -568,7 +568,7 @@ h1 em {
   white-space: nowrap;
 }
 
-.status-pill-example {
+.status-pill-listed {
   color: #5266d4;
 }
 
@@ -600,9 +600,15 @@ h1 em {
   text-transform: uppercase;
 }
 
-.card-arrow {
+.tool-link {
   color: var(--ink);
-  font-size: 18px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.tool-link:hover,
+.tool-row-aside a:hover {
+  color: var(--blue);
 }
 
 .submit-panel {
@@ -846,9 +852,11 @@ h1 em {
   text-align: right;
 }
 
-.tool-row-aside small {
-  color: #a0a5ab;
-  font-size: 8px;
+.tool-row-aside a {
+  color: var(--ink);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: none;
 }
 
 .empty-state {

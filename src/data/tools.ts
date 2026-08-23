@@ -1,10 +1,12 @@
-export type ToolStatus = "example" | "placeholder";
+export type ToolStatus = "listed" | "placeholder";
 
-export type ToolCategory = "Operations" | "Content" | "Member experience";
+export type ToolCategory =
+  "Discovery" | "Analytics" | "Creator utilities" | "Automation";
 
 export type Tool = {
   slug: string;
   name: string;
+  url: string;
   description: string;
   category: ToolCategory;
   status: ToolStatus;
@@ -14,61 +16,106 @@ export type Tool = {
 
 export const tools = [
   {
-    slug: "creator-roster",
-    name: "Creator roster",
+    slug: "skool-finder",
+    name: "Skool Finder",
+    url: "https://skool-finder.com/en/",
     description:
-      "A simple member follow-up sheet for names, offers, and the next useful conversation.",
-    category: "Operations",
-    status: "example",
-    note: "Example outline",
+      "Search Skool communities by topic and use filters to find a better fit.",
+    category: "Discovery",
+    status: "listed",
+    note: "Research listing",
     featured: true,
   },
   {
-    slug: "weekly-prompt-pack",
-    name: "Weekly prompt pack",
+    slug: "skooli",
+    name: "skoo.li",
+    url: "https://www.skoo.li/",
     description:
-      "A handful of prompts to help you plan posts that give members a reason to show up.",
-    category: "Content",
-    status: "example",
-    note: "Example outline",
+      "Browse a discovery index with views for trending, new, and growing communities.",
+    category: "Discovery",
+    status: "listed",
+    note: "Research listing",
     featured: true,
   },
   {
-    slug: "launch-checklist",
-    name: "Launch checklist",
+    slug: "skoolgrades",
+    name: "Skoolgrades",
+    url: "https://www.skoolgrades.com/",
     description:
-      "A short, practical checklist for opening a new community without forgetting the small stuff.",
-    category: "Operations",
-    status: "placeholder",
-    note: "Coming later",
+      "Explore analytics and community intelligence for Skool communities.",
+    category: "Analytics",
+    status: "listed",
+    note: "Research listing",
     featured: true,
   },
   {
-    slug: "welcome-sequence",
-    name: "Welcome sequence planner",
+    slug: "skool-extensions",
+    name: "Skool Extensions",
+    url: "https://chromewebstore.google.com/detail/skool-extensions/jinaapgibcgkfaffmpkhdikncmfhpfne",
     description:
-      "Map the first seven days for a new member, from hello to their first small win.",
-    category: "Member experience",
-    status: "placeholder",
-    note: "Coming later",
+      "A Chrome toolkit covering stats, CRM, bookmarks, calendar, translation, and notifications.",
+    category: "Creator utilities",
+    status: "listed",
+    note: "Research listing",
   },
   {
-    slug: "community-health-check",
-    name: "Community health check",
+    slug: "skooly",
+    name: "Skooly",
+    url: "https://chromewebstore.google.com/detail/skooly-tools-for-skool/njllaabmdlbgcgfibgkifnboijlpfban",
     description:
-      "A lightweight monthly check-in for spotting quiet rooms, unanswered questions, and repeat wins.",
-    category: "Member experience",
-    status: "placeholder",
-    note: "Coming later",
+      "Organize links and bookmarks, scan members, and review course analytics in Chrome.",
+    category: "Creator utilities",
+    status: "listed",
+    note: "Research listing",
   },
   {
-    slug: "content-repurpose-map",
-    name: "Content repurpose map",
+    slug: "stickyhive",
+    name: "StickyHive",
+    url: "https://stickyhive.ai/skool/chrome-extension/",
     description:
-      "Turn one strong lesson into a week of prompts, replies, and follow-up resources.",
-    category: "Content",
-    status: "placeholder",
-    note: "Coming later",
+      "Plan posts, build onboarding and DM sequences, and watch spam or churn signals.",
+    category: "Automation",
+    status: "listed",
+    note: "Research listing",
+  },
+  {
+    slug: "tools4skool",
+    name: "Tools4Skool",
+    url: "https://tools4skool.com/",
+    description:
+      "Automation and CRM tools with inbox management, exports, risk scores, and Claude/MCP connections.",
+    category: "Automation",
+    status: "listed",
+    note: "Research listing",
+  },
+  {
+    slug: "skool-zapier",
+    name: "Skool + Zapier",
+    url: "https://zapier.com/apps/skool/integrations",
+    description:
+      "Connect Skool membership triggers and actions to the other apps in a workflow.",
+    category: "Automation",
+    status: "listed",
+    note: "Research listing",
+  },
+  {
+    slug: "skool-bookmarks",
+    name: "Skool Bookmarks",
+    url: "https://chromewebstore.google.com/detail/skool-bookmarks/khapljdjjbnmgpjemihhocghbcfakcmf",
+    description: "Save and organize useful Skool posts in a Chrome extension.",
+    category: "Creator utilities",
+    status: "listed",
+    note: "Research listing",
+  },
+  {
+    slug: "skool-focus",
+    name: "Skool Focus",
+    url: "https://chromewebstore.google.com/detail/skool-focus/nchfffdkbhafombnfcpladflclakmdmo",
+    description:
+      "Hide distracting interface elements when you want a more classroom-focused view.",
+    category: "Creator utilities",
+    status: "listed",
+    note: "Research listing",
   },
 ] satisfies Tool[];
 
