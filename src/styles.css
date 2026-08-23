@@ -312,6 +312,19 @@ h1 em {
   color: var(--blue);
 }
 
+.data-status {
+  margin: -17px 0 24px;
+  color: var(--muted-ink);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.data-status-error {
+  color: #a45142;
+}
+
 .hero-note {
   position: relative;
   align-self: center;
@@ -679,6 +692,180 @@ h1 em {
   color: #596575;
   font-size: 14px;
   line-height: 1.65;
+}
+
+.launch-page {
+  padding-block: 85px 130px;
+}
+
+.launch-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(270px, 0.65fr);
+  gap: clamp(50px, 10vw, 150px);
+  align-items: end;
+  padding-bottom: 86px;
+}
+
+.launch-hero h1 {
+  max-width: 750px;
+  margin-bottom: 27px;
+  font-size: clamp(3.3rem, 7vw, 6.4rem);
+}
+
+.launch-intro {
+  max-width: 535px;
+  margin: 0;
+  color: #596575;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.launch-note {
+  display: flex;
+  flex-direction: column;
+  min-height: 270px;
+  padding: 25px;
+  background: var(--lime);
+  box-shadow: 10px 10px 0 var(--coral);
+  transform: rotate(-1.5deg);
+}
+
+.launch-note-label {
+  margin-bottom: auto;
+  color: #536008;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.launch-note strong {
+  display: block;
+  font-size: clamp(1.8rem, 3.5vw, 3.1rem);
+  letter-spacing: -0.07em;
+  line-height: 0.98;
+}
+
+.launch-note p {
+  max-width: 260px;
+  margin: 22px 0 0;
+  color: #536008;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.launch-form-section {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.65fr) minmax(0, 1.35fr);
+  gap: 35px 80px;
+  border-top: 1px solid var(--ink);
+  padding-top: 31px;
+}
+
+.launch-form-heading h2 {
+  max-width: 340px;
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 0.98;
+}
+
+.launch-form-heading .section-kicker {
+  margin-bottom: 18px;
+}
+
+.launch-form {
+  min-width: 0;
+}
+
+.launch-form > label {
+  display: block;
+  margin-bottom: 11px;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.launch-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.launch-input-row input {
+  min-width: 0;
+  flex: 1;
+  height: 50px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.launch-input-row input::placeholder {
+  color: #8d929a;
+}
+
+.launch-input-row .button {
+  flex-shrink: 0;
+  border: 0;
+}
+
+.launch-input-row .button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.launch-help {
+  margin: 12px 0 0;
+  color: var(--muted-ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.launch-config-message,
+.launch-message {
+  grid-column: 2;
+  margin: -5px 0 0;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.launch-config-message {
+  border-left: 3px solid var(--coral);
+  background: #f4ded9;
+  color: #654a44;
+}
+
+.launch-form-section > .launch-config-message + .launch-form {
+  grid-column: 2;
+}
+
+.launch-message {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 21px;
+}
+
+.launch-message-error {
+  border-left: 3px solid var(--coral);
+  background: #f4ded9;
+  color: #654a44;
+}
+
+.launch-message-success {
+  border-left: 3px solid var(--blue);
+  background: #e4e8fa;
+  color: var(--ink);
+}
+
+.launch-message-success a {
+  width: fit-content;
+  border-bottom: 1px solid currentColor;
+  color: #3d4dbe;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .directory-content {
@@ -1055,6 +1242,40 @@ h1 em {
     padding-block: 65px 56px;
   }
 
+  .launch-page {
+    padding-block: 65px 90px;
+  }
+
+  .launch-hero {
+    display: block;
+    padding-bottom: 75px;
+  }
+
+  .launch-hero h1 {
+    font-size: clamp(3.1rem, 15vw, 5rem);
+  }
+
+  .launch-intro {
+    font-size: 15px;
+  }
+
+  .launch-note {
+    max-width: 500px;
+    margin: 62px 10px 0 0;
+  }
+
+  .launch-form-section {
+    display: block;
+  }
+
+  .launch-form-heading {
+    margin-bottom: 32px;
+  }
+
+  .launch-config-message {
+    margin: 0 0 18px;
+  }
+
   .directory-hero > p {
     margin-top: 28px;
   }
@@ -1129,6 +1350,10 @@ h1 em {
     display: none;
   }
 
+  .main-nav {
+    gap: 12px;
+  }
+
   h1 {
     font-size: clamp(3.1rem, 16vw, 4.8rem);
   }
@@ -1159,6 +1384,19 @@ h1 em {
 
   .directory-hero h1 {
     font-size: clamp(3.1rem, 15vw, 4.7rem);
+  }
+
+  .launch-input-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .launch-input-row input {
+    width: 100%;
+  }
+
+  .launch-input-row .button {
+    width: fit-content;
   }
 
   .tool-row {

@@ -2,13 +2,21 @@ import {
   useEffect,
   useRef,
   useState,
+  type FormEvent,
   type MouseEvent,
   type RefObject,
 } from "react";
 import { categories, tools, type Tool, type ToolStatus } from "./data/tools";
+import {
+  mergeTools,
+  validateLaunchUrl,
+  type LaunchResult,
+  type PublishedTool,
+} from "./lib/launch";
 import "./styles.css";
 
-type Route = "home" | "tools" | "not-found";
+type Route = "home" | "tools" | "launch" | "not-found";
+type ConvexState = "disabled" | "loading" | "ready" | "error";
 
 type AppLocation = {
   pathname: string;
@@ -26,6 +34,7 @@ const suggestToolUrl = `https://github.com/toivomattila/skooltools/issues/new?${
 function getRoute(pathname = window.location.pathname): Route {
   if (pathname === "/") return "home";
   if (pathname === "/tools" || pathname === "/tools/") return "tools";
+  if (pathname === "/launch" || pathname === "/launch/") return "launch";
   return "not-found";
 }
 
@@ -69,9 +78,16 @@ function focusAndScrollToLocation(
   window.scrollTo({ top: 0, behavior });
 }
 
-function App() {
+type AppProps = {
+  publishedTools?: readonly PublishedTool[];
+  convexState: ConvexState;
+  onLaunch?: (url: string) => Promise<LaunchResult>;
+};
+
+function App({ publishedTools = [], convexState, onLaunch }: AppProps) {
   const [location, setLocation] = useState<AppLocation>(getLocation);
   const mainContentRef = useRef<HTMLElement | null>(null);
+  const directoryTools = mergeTools(tools, publishedTools);
 
   useEffect(() => {
     const handlePopState = () => setLocation(getLocation());
@@ -122,9 +138,25 @@ function App() {
     <div className="site-shell">
       <Header route={location.route} onNavigate={navigate} />
       {location.route === "home" ? (
-        <HomePage mainContentRef={mainContentRef} onNavigate={navigate} />
+        <HomePage
+          mainContentRef={mainContentRef}
+          onNavigate={navigate}
+          directoryTools={directoryTools}
+          convexState={convexState}
+        />
       ) : location.route === "tools" ? (
-        <ToolsPage mainContentRef={mainContentRef} onNavigate={navigate} />
+        <ToolsPage
+          mainContentRef={mainContentRef}
+          onNavigate={navigate}
+          directoryTools={directoryTools}
+          convexState={convexState}
+        />
+      ) : location.route === "launch" ? (
+        <LaunchPage
+          mainContentRef={mainContentRef}
+          convexState={convexState}
+          onLaunch={onLaunch}
+        />
       ) : (
         <NotFoundPage mainContentRef={mainContentRef} onNavigate={navigate} />
       )}
@@ -171,15 +203,17 @@ function Header({ route, onNavigate }: HeaderProps) {
         >
           Directory
         </a>
+        <a
+          className={route === "launch" ? "active" : ""}
+          href="/launch"
+          onClick={onNavigate}
+          aria-current={route === "launch" ? "page" : undefined}
+        >
+          Launch
+        </a>
       </nav>
-      <a
-        className="header-cta"
-        href={suggestToolUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Suggest a tool on GitHub (opens in a new tab)"
-      >
-        Suggest a tool on GitHub <span aria-hidden="true">↗</span>
+      <a className="header-cta" href="/launch" onClick={onNavigate}>
+        Launch a tool <span aria-hidden="true">→</span>
       </a>
     </header>
   );
@@ -190,8 +224,18 @@ type PageProps = {
   onNavigate: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
-function HomePage({ mainContentRef, onNavigate }: PageProps) {
-  const featuredTools = tools.filter((tool) => tool.featured);
+type DirectoryPageProps = PageProps & {
+  directoryTools: Tool[];
+  convexState: ConvexState;
+};
+
+function HomePage({
+  mainContentRef,
+  onNavigate,
+  directoryTools,
+  convexState,
+}: DirectoryPageProps) {
+  const featuredTools = directoryTools.filter((tool) => tool.featured);
 
   return (
     <main ref={mainContentRef} tabIndex={-1}>
@@ -215,6 +259,9 @@ function HomePage({ mainContentRef, onNavigate }: PageProps) {
               onClick={onNavigate}
             >
               Browse the directory <span aria-hidden="true">→</span>
+            </a>
+            <a className="text-link" href="/launch" onClick={onNavigate}>
+              Launch your tool <span aria-hidden="true">↗</span>
             </a>
             <a
               className="text-link"
@@ -271,6 +318,7 @@ function HomePage({ mainContentRef, onNavigate }: PageProps) {
             See all tools <span aria-hidden="true">↗</span>
           </a>
         </div>
+        <DataStatus state={convexState} />
         <div className="tool-grid">
           {featuredTools.map((tool) => (
             <ToolCard key={tool.slug} tool={tool} />
@@ -278,18 +326,23 @@ function HomePage({ mainContentRef, onNavigate }: PageProps) {
         </div>
       </section>
 
-      <SubmitPanel />
+      <SubmitPanel onNavigate={onNavigate} />
     </main>
   );
 }
 
-function ToolsPage({ mainContentRef }: PageProps) {
+function ToolsPage({
+  mainContentRef,
+  onNavigate,
+  directoryTools,
+  convexState,
+}: DirectoryPageProps) {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<(typeof categories)[number]>("All tools");
 
   const normalizedQuery = query.trim().toLowerCase();
-  const filteredTools = tools.filter((tool) => {
+  const filteredTools = directoryTools.filter((tool) => {
     const matchesCategory =
       selectedCategory === "All tools" || tool.category === selectedCategory;
     const matchesQuery =
@@ -348,14 +401,15 @@ function ToolsPage({ mainContentRef }: PageProps) {
 
         <div className="directory-meta">
           <p>
-            Showing <strong>{filteredTools.length}</strong> of {tools.length}{" "}
-            tools
+            Showing <strong>{filteredTools.length}</strong> of{" "}
+            {directoryTools.length} tools
           </p>
           <p className="meta-note">
             <span className="legend-dot" aria-hidden="true" /> Independent
             listings, not endorsements
           </p>
         </div>
+        <DataStatus state={convexState} />
 
         {filteredTools.length > 0 ? (
           <div className="directory-list">
@@ -374,7 +428,171 @@ function ToolsPage({ mainContentRef }: PageProps) {
         )}
       </section>
 
-      <SubmitPanel />
+      <SubmitPanel onNavigate={onNavigate} />
+    </main>
+  );
+}
+
+function DataStatus({ state }: { state: ConvexState }) {
+  if (state === "loading") {
+    return (
+      <p className="data-status" role="status">
+        Checking for recent launches…
+      </p>
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <p className="data-status data-status-error" role="status">
+        Recent launches are temporarily unavailable. The original directory is
+        still here.
+      </p>
+    );
+  }
+
+  return null;
+}
+
+function LaunchPage({
+  mainContentRef,
+  convexState,
+  onLaunch,
+}: {
+  mainContentRef: RefObject<HTMLElement | null>;
+  convexState: ConvexState;
+  onLaunch?: (url: string) => Promise<LaunchResult>;
+}) {
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<LaunchResult | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setResult(null);
+
+    const validation = validateLaunchUrl(url);
+    if (!validation.ok) {
+      setError(validation.error);
+      return;
+    }
+
+    if (!onLaunch || convexState === "disabled") {
+      setError(
+        "Launching is not configured here yet. Add VITE_CONVEX_URL to connect the directory.",
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const launchedTool = await onLaunch(validation.url);
+      setResult(launchedTool);
+      setUrl(launchedTool.url);
+    } catch (launchError) {
+      setError(
+        launchError instanceof Error
+          ? launchError.message
+          : "The page could not be launched. Check the URL and try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <main className="launch-page page-width" ref={mainContentRef} tabIndex={-1}>
+      <section className="launch-hero">
+        <div>
+          <p className="eyebrow">
+            <span className="eyebrow-dot" aria-hidden="true" />
+            Launch a tool
+          </p>
+          <h1>Put your useful thing in front of Skool builders.</h1>
+          <p className="launch-intro">
+            Share one public HTTPS link. We’ll read the page title and
+            description, then add it to the directory when the page responds.
+          </p>
+        </div>
+        <div className="launch-note">
+          <span className="launch-note-label">How it works</span>
+          <strong>One link in.</strong>
+          <strong>One listing out.</strong>
+          <p>
+            This is a URL-first flow inspired by Product Hunt. Publication is
+            automatic after a successful fetch—there is no human review queue in
+            this version.
+          </p>
+        </div>
+      </section>
+
+      <section
+        className="launch-form-section"
+        aria-labelledby="launch-form-title"
+      >
+        <div className="launch-form-heading">
+          <p className="section-kicker">Start with the address</p>
+          <h2 id="launch-form-title">Where should people go?</h2>
+        </div>
+        {convexState === "disabled" ? (
+          <p className="launch-config-message" role="status">
+            Launching is available once this site has a Convex URL configured.
+            You can still browse the static directory.
+          </p>
+        ) : null}
+        <form className="launch-form" onSubmit={handleSubmit} noValidate>
+          <label htmlFor="tool-url">Tool URL</label>
+          <div className="launch-input-row">
+            <input
+              id="tool-url"
+              name="url"
+              type="url"
+              inputMode="url"
+              autoComplete="url"
+              placeholder="https://yourtool.com"
+              value={url}
+              onChange={(event) => {
+                setUrl(event.target.value);
+                setError("");
+                setResult(null);
+              }}
+              aria-describedby="tool-url-help"
+              aria-invalid={Boolean(error)}
+              required
+            />
+            <button
+              className="button button-primary"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Checking page…" : "Launch tool"}
+              <span aria-hidden="true">{isSubmitting ? "…" : "→"}</span>
+            </button>
+          </div>
+          <p id="tool-url-help" className="launch-help">
+            Use the page people should visit, not a dashboard or a private
+            preview. HTTPS links only.
+          </p>
+          {error ? (
+            <p className="launch-message launch-message-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+          {result ? (
+            <div
+              className="launch-message launch-message-success"
+              role="status"
+            >
+              <strong>{result.name} is live in the directory.</strong>
+              <a href={result.url} target="_blank" rel="noopener noreferrer">
+                Open the launched tool <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          ) : null}
+        </form>
+      </section>
     </main>
   );
 }
@@ -471,7 +689,11 @@ function EmptyState({
   );
 }
 
-function SubmitPanel() {
+function SubmitPanel({
+  onNavigate,
+}: {
+  onNavigate: (event: MouseEvent<HTMLAnchorElement>) => void;
+}) {
   return (
     <section className="submit-panel page-width" id="submit" tabIndex={-1}>
       <div className="submit-panel-mark" aria-hidden="true">
@@ -482,18 +704,12 @@ function SubmitPanel() {
         <h2>Put it on the list.</h2>
         <p>
           This directory is small on purpose. If you have a template, tool, or
-          workflow that helps a Skool community run better, open the GitHub
-          issue form and share the link with a one-line description.
+          workflow that helps a Skool community run better, share its public
+          link and we’ll pull the page details into a new listing.
         </p>
       </div>
-      <a
-        className="button button-light"
-        href={suggestToolUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Open the GitHub issue form to suggest a tool (opens in a new tab)"
-      >
-        Suggest a tool on GitHub <span aria-hidden="true">→</span>
+      <a className="button button-light" href="/launch" onClick={onNavigate}>
+        Launch your tool <span aria-hidden="true">→</span>
       </a>
     </section>
   );

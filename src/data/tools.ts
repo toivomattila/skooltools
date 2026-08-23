@@ -1,7 +1,7 @@
 export type ToolStatus = "listed" | "placeholder";
 
 export type ToolCategory =
-  "Discovery" | "Analytics" | "Creator utilities" | "Automation";
+  "Discovery" | "Analytics" | "Creator utilities" | "Automation" | "New tools";
 
 type ToolBase = {
   slug: string;
@@ -13,7 +13,7 @@ type ToolBase = {
 
 export type ListedTool = ToolBase & {
   status: "listed";
-  url: `https://${string}`;
+  url: string;
 };
 
 export type PlaceholderTool = ToolBase & {
@@ -120,4 +120,5 @@ export const tools = [
 export const categories = [
   "All tools",
   ...Array.from(new Set(tools.map((tool) => tool.category))),
+  "New tools",
 ] as const;
