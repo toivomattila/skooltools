@@ -26,6 +26,26 @@ npm run lint
 npm run build
 ```
 
+## Convex foundation
+
+Convex is provisioned for a future database integration, but the app does not
+use Convex yet. The repository contains only an explicit empty schema.
+
+Use the selected development deployment while building backend features:
+
+```bash
+npx convex dev
+```
+
+Deploy the backend to the production deployment only when ready to release:
+
+```bash
+npx convex deploy --yes
+```
+
+The future Vite integration should use `VITE_CONVEX_URL`; adding a
+`ConvexProvider`, hooks, queries, mutations, and auth is intentionally deferred.
+
 ## Deploy to Vercel
 
 The app is a standard Vite static build. Vercel uses the `dist` directory
