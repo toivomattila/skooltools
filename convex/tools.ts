@@ -258,6 +258,11 @@ async function fetchMetadata(url: string): Promise<{
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error("The page took too long to respond.");
     }
+    if (error instanceof TypeError) {
+      throw new Error(
+        "We could not reach that page. Check the URL and try again.",
+      );
+    }
     throw error instanceof Error
       ? error
       : new Error("The page could not be read.");
