@@ -4,39 +4,96 @@ import "./styles.css";
 
 type Route = "home" | "tools";
 
-function getRoute(): Route {
-  return window.location.pathname.startsWith("/tools") ? "tools" : "home";
+type AppLocation = {
+  pathname: string;
+  hash: string;
+  route: Route;
+};
+
+function getRoute(pathname = window.location.pathname): Route {
+  return pathname.startsWith("/tools") ? "tools" : "home";
+}
+
+function getLocation(): AppLocation {
+  return {
+    pathname: window.location.pathname,
+    hash: window.location.hash,
+    route: getRoute(),
+  };
+}
+
+function getScrollBehavior(): ScrollBehavior {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? "auto"
+    : "smooth";
+}
+
+function scrollToLocation(location: AppLocation) {
+  const behavior = getScrollBehavior();
+
+  if (location.hash) {
+    let id: string;
+    try {
+      id = decodeURIComponent(location.hash.slice(1));
+    } catch {
+      return;
+    }
+    document.getElementById(id)?.scrollIntoView({ behavior });
+    return;
+  }
+
+  window.scrollTo({ top: 0, behavior });
 }
 
 function App() {
-  const [route, setRoute] = useState<Route>(getRoute);
+  const [location, setLocation] = useState<AppLocation>(getLocation);
 
   useEffect(() => {
-    const handlePopState = () => setRoute(getRoute());
+    const handlePopState = () => setLocation(getLocation());
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => scrollToLocation(location), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [location]);
+
   const navigate = (event: MouseEvent<HTMLAnchorElement>) => {
     const href = event.currentTarget.getAttribute("href");
-    if (!href || !href.startsWith("/")) return;
-    event.preventDefault();
-    window.history.pushState({}, "", href);
-    setRoute(getRoute());
-    const [, hash] = href.split("#");
-    if (hash) {
-      window.setTimeout(() => {
-        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
-      }, 0);
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (
+      !href ||
+      !href.startsWith("/") ||
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
     }
+
+    const currentUrl = new URL(window.location.href);
+    const nextUrl = new URL(href, currentUrl);
+    if (nextUrl.origin !== currentUrl.origin) return;
+    if (
+      nextUrl.pathname === currentUrl.pathname &&
+      nextUrl.search === currentUrl.search &&
+      nextUrl.hash === currentUrl.hash
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    window.history.pushState({}, "", nextUrl);
+    setLocation(getLocation());
   };
 
   return (
     <div className="site-shell">
-      <Header route={route} onNavigate={navigate} />
-      {route === "home" ? (
+      <Header route={location.route} onNavigate={navigate} />
+      {location.route === "home" ? (
         <HomePage onNavigate={navigate} />
       ) : (
         <ToolsPage onNavigate={navigate} />
@@ -228,9 +285,11 @@ function ToolsPage({ onNavigate }: PageProps) {
               onChange={(event) => setQuery(event.target.value)}
             />
           </label>
-          <div className="category-filter" aria-label="Filter by category">
+          <fieldset className="category-filter">
+            <legend className="sr-only">Filter by category</legend>
             {categories.map((category) => (
               <button
+                aria-pressed={selectedCategory === category}
                 className={selectedCategory === category ? "selected" : ""}
                 key={category}
                 type="button"
@@ -239,7 +298,7 @@ function ToolsPage({ onNavigate }: PageProps) {
                 {category}
               </button>
             ))}
-          </div>
+          </fieldset>
         </div>
 
         <div className="directory-meta">
@@ -277,30 +336,35 @@ function ToolsPage({ onNavigate }: PageProps) {
 
 function ToolCard({ tool }: { tool: Tool }) {
   return (
-    <article className={`tool-card status-${tool.status}`}>
+    <article
+      className={`tool-card status-${tool.status}`}
+      data-tool={tool.slug}
+    >
       <div className="tool-card-topline">
         <span className="tool-category">{tool.category}</span>
         <StatusPill status={tool.status} />
       </div>
       <h3>{tool.name}</h3>
       <p>{tool.description}</p>
-      <div className="card-footer">
-        <a
-          className="tool-link"
-          href={tool.url}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Visit <span aria-hidden="true">↗</span>
-        </a>
-      </div>
+      {tool.status === "listed" ? (
+        <div className="card-footer">
+          <a
+            className="tool-link"
+            href={tool.url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Visit <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      ) : null}
     </article>
   );
 }
 
 function ToolRow({ tool }: { tool: Tool }) {
   return (
-    <article className={`tool-row status-${tool.status}`}>
+    <article className={`tool-row status-${tool.status}`} data-tool={tool.slug}>
       <div className="tool-row-index" aria-hidden="true">
         <span />
       </div>
@@ -313,9 +377,11 @@ function ToolRow({ tool }: { tool: Tool }) {
       </div>
       <div className="tool-row-aside">
         <span>{tool.category}</span>
-        <a href={tool.url} target="_blank" rel="noreferrer">
-          Visit tool <span aria-hidden="true">↗</span>
-        </a>
+        {tool.status === "listed" ? (
+          <a href={tool.url} target="_blank" rel="noreferrer">
+            Visit tool <span aria-hidden="true">↗</span>
+          </a>
+        ) : null}
       </div>
     </article>
   );

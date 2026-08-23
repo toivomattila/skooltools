@@ -3,15 +3,24 @@ export type ToolStatus = "listed" | "placeholder";
 export type ToolCategory =
   "Discovery" | "Analytics" | "Creator utilities" | "Automation";
 
-export type Tool = {
+type ToolBase = {
   slug: string;
   name: string;
-  url: string;
   description: string;
   category: ToolCategory;
-  status: ToolStatus;
   featured?: boolean;
 };
+
+export type ListedTool = ToolBase & {
+  status: "listed";
+  url: `https://${string}`;
+};
+
+export type PlaceholderTool = ToolBase & {
+  status: "placeholder";
+};
+
+export type Tool = ListedTool | PlaceholderTool;
 
 export const tools = [
   {
