@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { categories, tools, type Tool, type ToolStatus } from "./data/tools";
 import "./styles.css";
 
@@ -17,13 +17,20 @@ function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  const navigate = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const navigate = (event: MouseEvent<HTMLAnchorElement>) => {
     const href = event.currentTarget.getAttribute("href");
     if (!href || !href.startsWith("/")) return;
     event.preventDefault();
     window.history.pushState({}, "", href);
     setRoute(getRoute());
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const [, hash] = href.split("#");
+    if (hash) {
+      window.setTimeout(() => {
+        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
+      }, 0);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   return (
@@ -41,7 +48,7 @@ function App() {
 
 type HeaderProps = {
   route: Route;
-  onNavigate: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  onNavigate: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
 function Header({ route, onNavigate }: HeaderProps) {
@@ -84,7 +91,7 @@ function Header({ route, onNavigate }: HeaderProps) {
 }
 
 type PageProps = {
-  onNavigate: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  onNavigate: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
 function HomePage({ onNavigate }: PageProps) {
