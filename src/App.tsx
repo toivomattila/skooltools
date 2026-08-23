@@ -1,8 +1,14 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type RefObject,
+} from "react";
 import { categories, tools, type Tool, type ToolStatus } from "./data/tools";
 import "./styles.css";
 
-type Route = "home" | "tools";
+type Route = "home" | "tools" | "not-found";
 
 type AppLocation = {
   pathname: string;
@@ -10,15 +16,25 @@ type AppLocation = {
   route: Route;
 };
 
+const suggestToolUrl = `https://github.com/toivomattila/skooltools/issues/new?${new URLSearchParams(
+  {
+    title: "Suggest a tool for Skool Tools",
+    body: "Tool name:\n\nLink:\n\nWhy is it useful?\n",
+  },
+)}`;
+
 function getRoute(pathname = window.location.pathname): Route {
-  return pathname.startsWith("/tools") ? "tools" : "home";
+  if (pathname === "/") return "home";
+  if (pathname === "/tools" || pathname === "/tools/") return "tools";
+  return "not-found";
 }
 
 function getLocation(): AppLocation {
+  const { pathname, hash } = window.location;
   return {
-    pathname: window.location.pathname,
-    hash: window.location.hash,
-    route: getRoute(),
+    pathname,
+    hash,
+    route: getRoute(pathname),
   };
 }
 
@@ -28,8 +44,12 @@ function getScrollBehavior(): ScrollBehavior {
     : "smooth";
 }
 
-function scrollToLocation(location: AppLocation) {
+function focusAndScrollToLocation(
+  location: AppLocation,
+  mainContentRef: RefObject<HTMLElement | null>,
+) {
   const behavior = getScrollBehavior();
+  mainContentRef.current?.focus({ preventScroll: true });
 
   if (location.hash) {
     let id: string;
@@ -38,7 +58,11 @@ function scrollToLocation(location: AppLocation) {
     } catch {
       return;
     }
-    document.getElementById(id)?.scrollIntoView({ behavior });
+    const hashTarget = document.getElementById(id);
+    if (hashTarget instanceof HTMLElement) {
+      hashTarget.focus({ preventScroll: true });
+      hashTarget.scrollIntoView({ behavior });
+    }
     return;
   }
 
@@ -47,6 +71,7 @@ function scrollToLocation(location: AppLocation) {
 
 function App() {
   const [location, setLocation] = useState<AppLocation>(getLocation);
+  const mainContentRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const handlePopState = () => setLocation(getLocation());
@@ -55,9 +80,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => scrollToLocation(location), 0);
+    const timeoutId = window.setTimeout(
+      () => focusAndScrollToLocation(location, mainContentRef),
+      0,
+    );
     return () => window.clearTimeout(timeoutId);
-  }, [location]);
+  }, [location, mainContentRef]);
 
   const navigate = (event: MouseEvent<HTMLAnchorElement>) => {
     const href = event.currentTarget.getAttribute("href");
@@ -77,6 +105,7 @@ function App() {
     const currentUrl = new URL(window.location.href);
     const nextUrl = new URL(href, currentUrl);
     if (nextUrl.origin !== currentUrl.origin) return;
+    event.preventDefault();
     if (
       nextUrl.pathname === currentUrl.pathname &&
       nextUrl.search === currentUrl.search &&
@@ -85,7 +114,6 @@ function App() {
       return;
     }
 
-    event.preventDefault();
     window.history.pushState({}, "", nextUrl);
     setLocation(getLocation());
   };
@@ -94,9 +122,11 @@ function App() {
     <div className="site-shell">
       <Header route={location.route} onNavigate={navigate} />
       {location.route === "home" ? (
-        <HomePage onNavigate={navigate} />
+        <HomePage mainContentRef={mainContentRef} onNavigate={navigate} />
+      ) : location.route === "tools" ? (
+        <ToolsPage mainContentRef={mainContentRef} onNavigate={navigate} />
       ) : (
-        <ToolsPage onNavigate={navigate} />
+        <NotFoundPage mainContentRef={mainContentRef} onNavigate={navigate} />
       )}
       <Footer onNavigate={navigate} />
     </div>
@@ -129,6 +159,7 @@ function Header({ route, onNavigate }: HeaderProps) {
           className={route === "home" ? "active" : ""}
           href="/"
           onClick={onNavigate}
+          aria-current={route === "home" ? "page" : undefined}
         >
           Home
         </a>
@@ -136,26 +167,34 @@ function Header({ route, onNavigate }: HeaderProps) {
           className={route === "tools" ? "active" : ""}
           href="/tools"
           onClick={onNavigate}
+          aria-current={route === "tools" ? "page" : undefined}
         >
           Directory
         </a>
       </nav>
-      <a className="header-cta" href="/tools#submit" onClick={onNavigate}>
-        Suggest a tool <span aria-hidden="true">↗</span>
+      <a
+        className="header-cta"
+        href={suggestToolUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Suggest a tool on GitHub (opens in a new tab)"
+      >
+        Suggest a tool on GitHub <span aria-hidden="true">↗</span>
       </a>
     </header>
   );
 }
 
 type PageProps = {
+  mainContentRef: RefObject<HTMLElement | null>;
   onNavigate: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
-function HomePage({ onNavigate }: PageProps) {
+function HomePage({ mainContentRef, onNavigate }: PageProps) {
   const featuredTools = tools.filter((tool) => tool.featured);
 
   return (
-    <main>
+    <main ref={mainContentRef} tabIndex={-1}>
       <section className="hero page-width">
         <div className="hero-copy">
           <p className="eyebrow">
@@ -177,8 +216,14 @@ function HomePage({ onNavigate }: PageProps) {
             >
               Browse the directory <span aria-hidden="true">→</span>
             </a>
-            <a className="text-link" href="/tools#submit" onClick={onNavigate}>
-              Have something to add? <span aria-hidden="true">↗</span>
+            <a
+              className="text-link"
+              href={suggestToolUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Suggest a tool on GitHub (opens in a new tab)"
+            >
+              Suggest a tool on GitHub <span aria-hidden="true">↗</span>
             </a>
           </div>
         </div>
@@ -233,12 +278,12 @@ function HomePage({ onNavigate }: PageProps) {
         </div>
       </section>
 
-      <SubmitPanel onNavigate={onNavigate} />
+      <SubmitPanel />
     </main>
   );
 }
 
-function ToolsPage({ onNavigate }: PageProps) {
+function ToolsPage({ mainContentRef }: PageProps) {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<(typeof categories)[number]>("All tools");
@@ -256,7 +301,7 @@ function ToolsPage({ onNavigate }: PageProps) {
   });
 
   return (
-    <main>
+    <main ref={mainContentRef} tabIndex={-1}>
       <section className="directory-hero page-width">
         <div>
           <p className="eyebrow">
@@ -329,7 +374,7 @@ function ToolsPage({ onNavigate }: PageProps) {
         )}
       </section>
 
-      <SubmitPanel onNavigate={onNavigate} />
+      <SubmitPanel />
     </main>
   );
 }
@@ -352,7 +397,8 @@ function ToolCard({ tool }: { tool: Tool }) {
             className="tool-link"
             href={tool.url}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
+            aria-label={`Visit ${tool.name}`}
           >
             Visit <span aria-hidden="true">↗</span>
           </a>
@@ -378,7 +424,12 @@ function ToolRow({ tool }: { tool: Tool }) {
       <div className="tool-row-aside">
         <span>{tool.category}</span>
         {tool.status === "listed" ? (
-          <a href={tool.url} target="_blank" rel="noreferrer">
+          <a
+            href={tool.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Visit ${tool.name}`}
+          >
             Visit tool <span aria-hidden="true">↗</span>
           </a>
         ) : null}
@@ -420,9 +471,9 @@ function EmptyState({
   );
 }
 
-function SubmitPanel({ onNavigate }: PageProps) {
+function SubmitPanel() {
   return (
-    <section className="submit-panel page-width" id="submit">
+    <section className="submit-panel page-width" id="submit" tabIndex={-1}>
       <div className="submit-panel-mark" aria-hidden="true">
         <span>+</span>
       </div>
@@ -431,22 +482,47 @@ function SubmitPanel({ onNavigate }: PageProps) {
         <h2>Put it on the list.</h2>
         <p>
           This directory is small on purpose. If you have a template, tool, or
-          workflow that helps a Skool community run better, send over the link
-          and a one-line description.
+          workflow that helps a Skool community run better, open the GitHub
+          issue form and share the link with a one-line description.
         </p>
       </div>
       <a
         className="button button-light"
-        href="/tools#submit"
-        onClick={onNavigate}
+        href={suggestToolUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open the GitHub issue form to suggest a tool (opens in a new tab)"
       >
-        Suggest a tool <span aria-hidden="true">→</span>
+        Suggest a tool on GitHub <span aria-hidden="true">→</span>
       </a>
     </section>
   );
 }
 
-function Footer({ onNavigate }: PageProps) {
+function NotFoundPage({ mainContentRef, onNavigate }: PageProps) {
+  return (
+    <main className="not-found page-width" ref={mainContentRef} tabIndex={-1}>
+      <p className="eyebrow">
+        <span className="eyebrow-dot" aria-hidden="true" />
+        Page not found
+      </p>
+      <h1>That page isn’t in the directory.</h1>
+      <p>
+        The address does not match a Skool Tools page. Browse the directory to
+        find the tools that are listed here.
+      </p>
+      <a className="button button-primary" href="/tools" onClick={onNavigate}>
+        Browse the directory <span aria-hidden="true">→</span>
+      </a>
+    </main>
+  );
+}
+
+function Footer({
+  onNavigate,
+}: {
+  onNavigate: (event: MouseEvent<HTMLAnchorElement>) => void;
+}) {
   return (
     <footer className="site-footer page-width">
       <p>Skool Tools</p>
