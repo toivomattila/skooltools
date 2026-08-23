@@ -10,7 +10,6 @@ export type Tool = {
   description: string;
   category: ToolCategory;
   status: ToolStatus;
-  note: string;
   featured?: boolean;
 };
 
@@ -23,7 +22,6 @@ export const tools = [
       "Search Skool communities by topic and use filters to find a better fit.",
     category: "Discovery",
     status: "listed",
-    note: "Research listing",
     featured: true,
   },
   {
@@ -34,7 +32,6 @@ export const tools = [
       "Browse a discovery index with views for trending, new, and growing communities.",
     category: "Discovery",
     status: "listed",
-    note: "Research listing",
     featured: true,
   },
   {
@@ -45,7 +42,6 @@ export const tools = [
       "Explore analytics and community intelligence for Skool communities.",
     category: "Analytics",
     status: "listed",
-    note: "Research listing",
     featured: true,
   },
   {
@@ -56,7 +52,6 @@ export const tools = [
       "A Chrome toolkit covering stats, CRM, bookmarks, calendar, translation, and notifications.",
     category: "Creator utilities",
     status: "listed",
-    note: "Research listing",
   },
   {
     slug: "skooly",
@@ -66,7 +61,6 @@ export const tools = [
       "Organize links and bookmarks, scan members, and review course analytics in Chrome.",
     category: "Creator utilities",
     status: "listed",
-    note: "Research listing",
   },
   {
     slug: "stickyhive",
@@ -76,7 +70,6 @@ export const tools = [
       "Plan posts, build onboarding and DM sequences, and watch spam or churn signals.",
     category: "Automation",
     status: "listed",
-    note: "Research listing",
   },
   {
     slug: "tools4skool",
@@ -86,7 +79,6 @@ export const tools = [
       "Automation and CRM tools with inbox management, exports, risk scores, and Claude/MCP connections.",
     category: "Automation",
     status: "listed",
-    note: "Research listing",
   },
   {
     slug: "skool-zapier",
@@ -96,7 +88,6 @@ export const tools = [
       "Connect Skool membership triggers and actions to the other apps in a workflow.",
     category: "Automation",
     status: "listed",
-    note: "Research listing",
   },
   {
     slug: "skool-bookmarks",
@@ -105,7 +96,6 @@ export const tools = [
     description: "Save and organize useful Skool posts in a Chrome extension.",
     category: "Creator utilities",
     status: "listed",
-    note: "Research listing",
   },
   {
     slug: "skool-focus",
@@ -115,7 +105,6 @@ export const tools = [
       "Hide distracting interface elements when you want a more classroom-focused view.",
     category: "Creator utilities",
     status: "listed",
-    note: "Research listing",
   },
 ] satisfies Tool[];
 

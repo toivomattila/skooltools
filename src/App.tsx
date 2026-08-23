@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { categories, tools, type Tool, type ToolStatus } from "./data/tools";
 import "./styles.css";
 
@@ -186,19 +186,17 @@ function ToolsPage({ onNavigate }: PageProps) {
   const [selectedCategory, setSelectedCategory] =
     useState<(typeof categories)[number]>("All tools");
 
-  const filteredTools = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    return tools.filter((tool) => {
-      const matchesCategory =
-        selectedCategory === "All tools" || tool.category === selectedCategory;
-      const matchesQuery =
-        !normalizedQuery ||
-        `${tool.name} ${tool.description} ${tool.category}`
-          .toLowerCase()
-          .includes(normalizedQuery);
-      return matchesCategory && matchesQuery;
-    });
-  }, [query, selectedCategory]);
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredTools = tools.filter((tool) => {
+    const matchesCategory =
+      selectedCategory === "All tools" || tool.category === selectedCategory;
+    const matchesQuery =
+      !normalizedQuery ||
+      `${tool.name} ${tool.description} ${tool.category}`
+        .toLowerCase()
+        .includes(normalizedQuery);
+    return matchesCategory && matchesQuery;
+  });
 
   return (
     <main>
@@ -287,7 +285,6 @@ function ToolCard({ tool }: { tool: Tool }) {
       <h3>{tool.name}</h3>
       <p>{tool.description}</p>
       <div className="card-footer">
-        <span>{tool.note}</span>
         <a
           className="tool-link"
           href={tool.url}

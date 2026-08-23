@@ -26,9 +26,6 @@ npm run lint
 npm run build
 ```
 
-There is no test runner yet because the v1 app has no data-fetching or
-state-heavy behavior. Add one when interactive tools move into the directory.
-
 ## Deploy to Vercel
 
 The app is a standard Vite static build. Vercel uses the `dist` directory
@@ -59,14 +56,9 @@ new object to the `tools` array and keep it within the `Tool` shape:
   description: 'Keep a simple record of the progress members share.',
   category: 'Creator utilities',
   status: 'placeholder',
-  note: 'Coming later',
 }
 ```
 
 Use `status: 'listed'` for a researched directory entry, and
 `status: 'placeholder'` for a planned entry. Set `featured: true` to show an
 entry on the home page. The available categories are defined in the same file.
-
-This first version intentionally has no backend, authentication, or submission
-form. Replace the static array with a CMS or API when the directory needs
-curation workflows.
