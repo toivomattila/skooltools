@@ -81,6 +81,15 @@ export const tools = [
     status: "listed",
   },
   {
+    slug: "skoolcue",
+    name: "SkoolCue",
+    url: "https://skoolcue.com/",
+    description:
+      "Surface welcomes, unanswered threads, and follow-ups so members feel seen and keep moving.",
+    category: "Automation",
+    status: "listed",
+  },
+  {
     slug: "tools4skool",
     name: "Tools4Skool",
     url: "https://tools4skool.com/",
